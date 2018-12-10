@@ -12,10 +12,7 @@
 #include "Scripts/Editor/EditorPreferences.as"
 #include "Scripts/Editor/EditorToolBar.as"
 #include "Scripts/Editor/EditorSecondaryToolbar.as"
-
-//**Lumak - override
-#include "InGameEditor/EditorUI.as"
-
+#include "Scripts/Editor/EditorUI.as"
 #include "Scripts/Editor/EditorImport.as"
 #include "Scripts/Editor/EditorExport.as"
 #include "Scripts/Editor/EditorResourceBrowser.as"
@@ -79,28 +76,16 @@ void Start()
 
 void FirstFrame()
 {
-    int gameSceneLoaded = 0;
-
-    // **Lumak - skip this
-    //CreateScene();
-
-    // Allow access to the scene from the console
-    editorScene = script.defaultScene;
-
+    // Create root scene node
+    CreateScene();
     // Load editor settings and preferences
     LoadConfig();
     // Create user interface for the editor
     CreateUI();
     // Create root UI element where all 'editable' UI elements would be parented to
     CreateRootUIElement();
-
-    // **Lumak - skip this
     // Load the initial scene if provided
-    //ParseArguments();
-
-    // but need to call this
-    CreateGizmo();
-
+    ParseArguments();
     // Switch to real frame handler after initialization
     SubscribeToEvent("Update", "HandleUpdate");
     SubscribeToEvent("ReloadFinished", "HandleReloadFinishOrFail");
@@ -220,11 +205,10 @@ void LoadConfig()
         if (cameraElem.HasAttribute("fov")) viewFov = cameraElem.GetFloat("fov");
         if (cameraElem.HasAttribute("speed")) cameraBaseSpeed = cameraElem.GetFloat("speed");
         if (cameraElem.HasAttribute("limitrotation")) limitRotation = cameraElem.GetBool("limitrotation");
+        if (cameraElem.HasAttribute("mousewheelcameraposition")) mouseWheelCameraPosition = cameraElem.GetBool("mousewheelcameraposition");
         if (cameraElem.HasAttribute("viewportmode")) viewportMode = cameraElem.GetUInt("viewportmode");
         if (cameraElem.HasAttribute("mouseorbitmode")) mouseOrbitMode = cameraElem.GetInt("mouseorbitmode");
         if (cameraElem.HasAttribute("mmbpan")) mmbPanMode = cameraElem.GetBool("mmbpan");
-        if (cameraElem.HasAttribute("rotatearoundselect")) rotateAroundSelect = cameraElem.GetBool("rotatearoundselect");
-
         UpdateViewParameters();
     }
 
@@ -233,6 +217,7 @@ void LoadConfig()
         if (objectElem.HasAttribute("cameraflymode")) cameraFlyMode = objectElem.GetBool("cameraflymode");
         if (objectElem.HasAttribute("hotkeymode")) hotKeyMode = objectElem.GetInt("hotkeymode");
         if (objectElem.HasAttribute("newnodemode")) newNodeMode = objectElem.GetInt("newnodemode");
+        if (objectElem.HasAttribute("newnodedistance")) newNodeDistance = objectElem.GetFloat("newnodedistance");
         if (objectElem.HasAttribute("movestep")) moveStep = objectElem.GetFloat("movestep");
         if (objectElem.HasAttribute("rotatestep")) rotateStep = objectElem.GetFloat("rotatestep");
         if (objectElem.HasAttribute("scalestep")) scaleStep = objectElem.GetFloat("scalestep");
@@ -374,14 +359,15 @@ void SaveConfig()
     cameraElem.SetFloat("fov", viewFov);
     cameraElem.SetFloat("speed", cameraBaseSpeed);
     cameraElem.SetBool("limitrotation", limitRotation);
+    cameraElem.SetBool("mousewheelcameraposition", mouseWheelCameraPosition);
     cameraElem.SetUInt("viewportmode", viewportMode);
     cameraElem.SetInt("mouseorbitmode", mouseOrbitMode);
     cameraElem.SetBool("mmbpan", mmbPanMode);
-    cameraElem.SetBool("rotatearoundselect", rotateAroundSelect);
 
     objectElem.SetBool("cameraflymode", cameraFlyMode);
     objectElem.SetInt("hotkeymode", hotKeyMode);
     objectElem.SetInt("newnodemode", newNodeMode);
+    objectElem.SetFloat("newnodedistance", newNodeDistance);
     objectElem.SetFloat("movestep", moveStep);
     objectElem.SetFloat("rotatestep", rotateStep);
     objectElem.SetFloat("scalestep", scaleStep);
